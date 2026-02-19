@@ -226,15 +226,17 @@ button:disabled {
   position: relative;
   z-index: 1;
   flex: 1;
-  max-width: 560px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+  padding: 1.5rem 2rem 2.5rem;
   width: 100%;
+  box-sizing: border-box;
 }
+
 
 .home-card {
   border-radius: 24px;
-  padding: 2rem 1.5rem;
+  padding: 1.75rem 1.5rem;
   text-align: center;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
 }
@@ -288,16 +290,26 @@ button:disabled {
 
 .home-plans {
   position: relative;
-  margin-top: 2.5rem;
+  margin-top: 2rem;
   text-align: center;
-  padding-bottom: 2.5rem;
+  padding-bottom: 2rem;
+}
+
+.home-plans--grid {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  padding-left: 2rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
 }
 
 .home-plans-title {
-  margin: 0 0 1.25rem;
+  margin: 0 0 2rem;
   font-family: 'Playfair Display', serif;
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.85rem;
+  font-weight: 700;
   letter-spacing: 0.04em;
   color: #036C17;
   display: inline-flex;
@@ -309,15 +321,50 @@ button:disabled {
 .home-carousel-wrap {
   position: relative;
   padding: 2rem 3rem 3rem;
-  min-height: 380px;
+  min-height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+}
+
+.home-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  padding: 2rem 0 1rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.home-display-toggle {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.65rem 1.5rem;
+  font-family: var(--font-outfit);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #036C17;
+  background: rgba(255, 252, 248, 0.9);
+  border: 2px solid rgba(3, 108, 23, 0.3);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.home-display-toggle:hover {
+  background: rgba(3, 108, 23, 0.1);
+  border-color: #036C17;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(3, 108, 23, 0.15);
 }
 
 .home-swiper {
   width: 100%;
-  max-width: 340px;
+  max-width: 520px;
   padding: 0 0 2.5rem;
 }
 .home-swiper .swiper-slide {
@@ -330,8 +377,8 @@ button:disabled {
 /* Cartes plans : design soigné + couleurs pastel + description (bouton pour aller à l'inscription) */
 .home-plan-card {
   width: 100%;
-  min-height: 320px;
-  padding: 1.5rem 1.25rem 1.75rem;
+  min-height: 420px;
+  padding: 2rem 2.5rem 2rem;
   border-radius: 24px;
   text-align: center;
   font-family: 'Outfit', system-ui, sans-serif;
@@ -341,7 +388,7 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.35rem;
+  gap: 0.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   appearance: none;
@@ -349,23 +396,60 @@ button:disabled {
 .home-plan-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 28px 56px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  color: #fff !important;
+}
+.home-plan-card:hover .home-plan-price {
+  font-size: 3.25rem;
+  transform: scale(1.08);
+}
+.home-plan-card:hover .home-plan-name,
+.home-plan-card:hover .home-plan-limit,
+.home-plan-card:hover .home-plan-description {
+  color: #fff !important;
+}
+.home-plan-card:hover .home-plan-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
 }
 
 .home-plan-card--alien {
   background: linear-gradient(160deg, #b8e9a8 0%, #8dd87a 50%, #6bc957 100%);
   color: #1e4d0f;
 }
+.home-plan-card--alien .home-plan-price {
+  color: #036C17;
+  text-shadow: 0 2px 10px rgba(3, 108, 23, 0.3);
+}
+.home-plan-card--alien:hover .home-plan-price {
+  color: #fff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.2);
+}
 .home-plan-card--saile {
   background: linear-gradient(160deg, #7ecf7a 0%, #4a9d47 50%, #036C17 100%);
   color: #e8f5e6;
+}
+.home-plan-card--saile .home-plan-price {
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.2);
 }
 .home-plan-card--mango {
   background: linear-gradient(160deg, #ffd4a8 0%, #ffb366 50%, #E87305 100%);
   color: #3d2602;
 }
+.home-plan-card--mango .home-plan-price {
+  color: #AE4202;
+  text-shadow: 0 2px 10px rgba(174, 66, 2, 0.35);
+}
+.home-plan-card--mango:hover .home-plan-price {
+  color: #fff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.2);
+}
 .home-plan-card--fire {
   background: linear-gradient(160deg, #d46a3a 0%, #AE4202 50%, #6b2801 100%);
   color: #fff8f0;
+}
+.home-plan-card--fire .home-plan-price {
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 255, 255, 0.15);
 }
 
 /* Plan Pigeon : couleur or (base + active) */
@@ -452,9 +536,13 @@ button:disabled {
 
 .home-plan-price {
   display: block;
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-size: 2.75rem;
+  font-weight: 900;
   letter-spacing: 0.02em;
+  margin: 0.5rem 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+  transition: font-size 0.3s ease, transform 0.3s ease;
 }
 
 .home-plan-limit {
@@ -465,16 +553,17 @@ button:disabled {
 }
 
 .home-plan-description {
-  margin: 0.75rem 0 0;
-  font-size: 0.8rem;
-  line-height: 1.35;
+  margin: 1rem 0 0;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
   opacity: 0.92;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   text-align: center;
   max-width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Option gratuite : en bas à droite, lien vers inscription plan free */
@@ -1574,7 +1663,7 @@ button:disabled {
   .home-sparkle--title { font-size: 0.45em; }
 
   .home-main {
-    padding: 1.25rem 0.75rem 3rem;
+    padding: 1.25rem 1rem 3rem;
     max-width: 100%;
   }
 
@@ -1607,13 +1696,42 @@ button:disabled {
   }
 
   .home-plans-title {
-    font-size: 1.15rem;
-    margin: 0 0 1rem;
+    font-size: 1.4rem;
+    margin: 0 0 1.25rem;
+  }
+
+  .home-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem 0 1rem;
+  }
+
+  .home-plans--grid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .home-plans-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .home-plans-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
   }
 
   .home-carousel-wrap {
-    padding: 1.25rem 2rem 1.5rem;
-    min-height: 320px;
+    padding: 1.5rem 1.5rem 2rem;
+    min-height: 420px;
+  }
+
+  .home-display-toggle {
+    margin-top: 1.25rem;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.85rem;
   }
 
   .home-swiper {
@@ -1622,13 +1740,16 @@ button:disabled {
   }
 
   .home-plan-card {
-    max-width: 260px;
+    max-width: 280px;
     margin: 0 auto;
-    min-height: 400px;
-    padding: 1.25rem 1rem 1.5rem;
+    min-height: 450px;
+    padding: 1.75rem 1.75rem 2rem;
     border-radius: 20px;
-    gap: 0.25rem;
+    gap: 0.4rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+  .home-plan-description {
+    padding: 0 0.5rem;
   }
   .home-plan-card:hover {
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
@@ -1643,7 +1764,10 @@ button:disabled {
   }
 
   .home-plan-price {
-    font-size: 1.4rem;
+    font-size: 2rem;
+  }
+  .home-plan-card:hover .home-plan-price {
+    font-size: 2.35rem;
   }
 
   .home-plan-limit {
@@ -1651,10 +1775,9 @@ button:disabled {
   }
 
   .home-plan-description {
-    font-size: 0.75rem;
-    margin: 0.5rem 0 0;
-    -webkit-line-clamp: 3;
-    line-height: 1.3;
+    font-size: 0.85rem;
+    margin: 0.75rem 0 0;
+    line-height: 1.4;
   }
 
   /* Pigeon actif : scale un peu réduit sur petit écran */
