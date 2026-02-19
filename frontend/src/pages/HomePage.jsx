@@ -63,6 +63,7 @@ const PLANS = [
 export default function HomePage() {
   const [swiperInstance, setSwiperInstance] = useState(null)
   const [activePlanIndex, setActivePlanIndex] = useState(0)
+  const [isGridView, setIsGridView] = useState(false)
   const navigate = useNavigate()
 
   return (
@@ -98,62 +99,90 @@ export default function HomePage() {
           <div className="home-arrow" aria-hidden />
         </section>
 
-        <section className="home-plans">
+        <section className={`home-plans ${isGridView ? 'home-plans--grid' : ''}`}>
           <h2 className="home-plans-title">
             Subscription plan <Sparkle className="home-sparkle home-sparkle--sub" />
           </h2>
 
-          <div className="home-carousel-wrap">
-            <button
-              type="button"
-              className="home-carousel-btn home-carousel-btn--prev"
-              onClick={() => swiperInstance?.slidePrev()}
-              aria-label="Plan précédent"
-            >
-              <span aria-hidden>‹</span>
-            </button>
-
-            <Swiper
-              onSwiper={setSwiperInstance}
-              onSlideChange={(swiper) => setActivePlanIndex(swiper.realIndex)}
-              effect="cards"
-              grabCursor
-              modules={[EffectCards, Navigation, Pagination, Autoplay]}
-              className="home-swiper"
-              cardsEffect={{ perSlideOffset: 12, perSlideRotate: 2, slideShadows: true }}
-              pagination={{ clickable: true, el: '.home-carousel-pagination' }}
-              autoplay={{ delay: 8000, disableOnInteraction: false }}
-              loop
-              speed={600}
-            >
+          {isGridView ? (
+            <div className="home-plans-grid">
               {PLANS.map((plan) => (
-                <SwiperSlide key={plan.id}>
-                  <button
-                    type="button"
-                    className={`home-plan-card home-plan-card--${plan.color} ${plan.id === 'pigeon' ? 'home-plan-card--pigeon' : ''}`}
-                    onClick={() => navigate(`/register?plan=${plan.id}`)}
-                  >
-                    <span className="home-plan-icon" aria-hidden>{plan.icon}</span>
-                    <span className="home-plan-name">{plan.nameDisplay}</span>
-                    <span className="home-plan-price">{plan.priceFormatted}</span>
-                    <span className="home-plan-limit">{plan.limitFormatted}</span>
-                    <p className="home-plan-description">{plan.description}</p>
-                  </button>
-                </SwiperSlide>
+                <button
+                  key={plan.id}
+                  type="button"
+                  className={`home-plan-card home-plan-card--${plan.color} ${plan.id === 'pigeon' ? 'home-plan-card--pigeon' : ''}`}
+                  onClick={() => navigate(`/register?plan=${plan.id}`)}
+                >
+                  <span className="home-plan-icon" aria-hidden>{plan.icon}</span>
+                  <span className="home-plan-name">{plan.nameDisplay}</span>
+                  <span className="home-plan-price">{plan.priceFormatted}</span>
+                  <span className="home-plan-limit">{plan.limitFormatted}</span>
+                  <p className="home-plan-description">{plan.description}</p>
+                </button>
               ))}
-            </Swiper>
+            </div>
+          ) : (
+            <div className="home-carousel-wrap">
+              <button
+                type="button"
+                className="home-carousel-btn home-carousel-btn--prev"
+                onClick={() => swiperInstance?.slidePrev()}
+                aria-label="Plan précédent"
+              >
+                <span aria-hidden>‹</span>
+              </button>
 
-            <button
-              type="button"
-              className="home-carousel-btn home-carousel-btn--next"
-              onClick={() => swiperInstance?.slideNext()}
-              aria-label="Plan suivant"
-            >
-              <span aria-hidden>›</span>
-            </button>
+              <Swiper
+                onSwiper={setSwiperInstance}
+                onSlideChange={(swiper) => setActivePlanIndex(swiper.realIndex)}
+                effect="cards"
+                grabCursor
+                modules={[EffectCards, Navigation, Pagination, Autoplay]}
+                className="home-swiper"
+                cardsEffect={{ perSlideOffset: 12, perSlideRotate: 2, slideShadows: true }}
+                pagination={{ clickable: true, el: '.home-carousel-pagination' }}
+                autoplay={{ delay: 8000, disableOnInteraction: false }}
+                loop
+                speed={600}
+              >
+                {PLANS.map((plan) => (
+                  <SwiperSlide key={plan.id}>
+                    <button
+                      type="button"
+                      className={`home-plan-card home-plan-card--${plan.color} ${plan.id === 'pigeon' ? 'home-plan-card--pigeon' : ''}`}
+                      onClick={() => navigate(`/register?plan=${plan.id}`)}
+                    >
+                      <span className="home-plan-icon" aria-hidden>{plan.icon}</span>
+                      <span className="home-plan-name">{plan.nameDisplay}</span>
+                      <span className="home-plan-price">{plan.priceFormatted}</span>
+                      <span className="home-plan-limit">{plan.limitFormatted}</span>
+                      <p className="home-plan-description">{plan.description}</p>
+                    </button>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
 
-            <div className="home-carousel-pagination" />
-          </div>
+              <button
+                type="button"
+                className="home-carousel-btn home-carousel-btn--next"
+                onClick={() => swiperInstance?.slideNext()}
+                aria-label="Plan suivant"
+              >
+                <span aria-hidden>›</span>
+              </button>
+
+              <div className="home-carousel-pagination" />
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="home-display-toggle"
+            onClick={() => setIsGridView(!isGridView)}
+            aria-label={isGridView ? 'Afficher en carousel' : 'Afficher en grille'}
+          >
+            {isGridView ? 'Afficher en carousel' : 'Changer affichage'}
+          </button>
         </section>
       </main>
 
