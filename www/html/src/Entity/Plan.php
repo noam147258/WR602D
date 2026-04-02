@@ -47,6 +47,9 @@ class Plan
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $created_at = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $stripe_price_id = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -180,6 +183,18 @@ class Plan
     public function setCreatedAt(?\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getStripePriceId(): ?string
+    {
+        return $this->stripe_price_id;
+    }
+
+    public function setStripePriceId(?string $stripe_price_id): static
+    {
+        $this->stripe_price_id = $stripe_price_id;
 
         return $this;
     }

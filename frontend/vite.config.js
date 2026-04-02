@@ -10,6 +10,10 @@ export default defineConfig({
         target: 'http://localhost:8326',
         changeOrigin: true,
       },
+      '/payment': {
+        target: 'http://localhost:8326',
+        changeOrigin: true,
+      },
     },
   },
 })

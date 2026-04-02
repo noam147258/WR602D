@@ -15,6 +15,8 @@ services:
         volumes:
             - ./www/:/var/www/
             - ./sites/:/etc/apache2/sites-enabled/
+            - ./docker/php/99-curl.ini:/etc/php/8.3/apache2/conf.d/99-curl.ini
+            - ./docker/php/99-curl.ini:/etc/php/8.3/cli/conf.d/99-curl.ini
 
     db:
         image: mariadb:10.8

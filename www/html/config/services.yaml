@@ -8,6 +8,13 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     gotenberg_url: 'http://gotenberg:3000'
+    stripe_default_checkout_mode: 'payment'
+    frontend_url: '%env(default::FRONTEND_URL)%'
+    stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
+    stripe_publishable_key: '%env(STRIPE_PUBLISHABLE_KEY)%'
+    stripe_webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+    # payment = prix uniques Stripe | subscription = abonnements récurrents (voir STRIPE_CHECKOUT_MODE dans .env)
+    stripe_checkout_mode: '%env(default:stripe_default_checkout_mode:STRIPE_CHECKOUT_MODE)%'
 
 services:
     # default configuration for services in *this* file
@@ -23,6 +30,12 @@ services:
     App\Service\PdfClient:
         arguments:
             $gotenbergUrl: '%env(default:gotenberg_url:GOTENBERG_URL)%'
+
+    App\Service\StripeService:
+        arguments:
+            $secretKey: '%stripe_secret_key%'
+            $webhookSecret: '%stripe_webhook_secret%'
+            $checkoutMode: '%stripe_checkout_mode%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

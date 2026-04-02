@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { EffectCards, Navigation, Pagination, Autoplay } from 'swiper/modules'
+import Grainient from '../components/Grainient'
+import Footer from '../components/Footer'
+import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
 import 'swiper/css'
 import 'swiper/css/effect-cards'
 import 'swiper/css/navigation'
@@ -61,6 +65,11 @@ const PLANS = [
 }))
 
 export default function HomePage() {
+  const { theme } = useTheme()
+  const { user } = useAuth()
+  const userColor = user?.couleurPref || '#036C17'
+  const color1 = theme === 'dark' ? '#031f3a' : '#bbf7d0'
+  const color3 = theme === 'dark' ? '#9f1239' : '#fecaca'
   const [swiperInstance, setSwiperInstance] = useState(null)
   const [activePlanIndex, setActivePlanIndex] = useState(0)
   const [isGridView, setIsGridView] = useState(false)
@@ -69,10 +78,12 @@ export default function HomePage() {
   return (
     <div className="home-page">
       <div className="home-bg" aria-hidden>
-        <div className="home-bg-layer home-bg-layer--1" />
-        <div className="home-bg-layer home-bg-layer--2" />
-        <div className="home-bg-layer home-bg-layer--3" />
-        <div className="home-bg-layer home-bg-layer--4" />
+        <Grainient
+          className="home-bg-canvas"
+          color1={color1}
+          color2={userColor}
+          color3={color3}
+        />
         <div className="home-bg-noise" />
       </div>
 
@@ -192,7 +203,7 @@ export default function HomePage() {
         </p>
       </Link>
 
-      <footer className="home-footer home-glass" />
+      <Footer />
     </div>
   )
 }
