@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement annulé - PDF Factory{% endblock %}
+
+{% block body %}
+<div style="max-width: 36rem; margin: 4rem auto; padding: 2rem; text-align: center; font-family: sans-serif;">
+    <h1 style="color: #b45309;">Paiement annulé</h1>
+    <p>Vous avez annulé le paiement. Aucun prélèvement n'a été effectué.</p>
+    {% if frontend_url|default('')|trim is not empty %}
+    <p><a href="{{ frontend_url|trim('/') }}/dashboard" style="color: #2563eb;">Retour au tableau de bord</a></p>
+    {% else %}
+    <p><a href="{{ path('app_home') }}">Retour à l'accueil</a></p>
+    {% endif %}
+</div>
+{% endblock %}

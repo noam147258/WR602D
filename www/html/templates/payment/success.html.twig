@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paiement réussi - PDF Factory{% endblock %}
+
+{% block body %}
+<div style="max-width: 36rem; margin: 4rem auto; padding: 2rem; text-align: center; font-family: sans-serif;">
+    <h1 style="color: #16a34a;">Paiement réussi</h1>
+    {% if plan_synced|default(false) %}
+    <p>Votre plan a été mis à jour. Vous pouvez retourner sur le tableau de bord.</p>
+    {% else %}
+    <p>Votre paiement a bien été enregistré. Si le plan ne s’affiche pas tout de suite, rafraîchissez la page du tableau de bord (le webhook Stripe peut aussi mettre à jour le plan).</p>
+    {% endif %}
+    {% if frontend_url|default('')|trim is not empty %}
+    <p><a href="{{ frontend_url|trim('/') }}/dashboard?payment=success" style="color: #2563eb;">Retour au tableau de bord</a></p>
+    {% else %}
+    <p><a href="{{ path('app_home') }}">Retour à l'accueil</a></p>
+    {% endif %}
+</div>
+{% endblock %}
