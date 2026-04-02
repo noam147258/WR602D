@@ -1,5 +1,11 @@
-import { Link } from 'react-router-dom'
-import { getPlanLabel, formatPrice, formatLimit } from '../utils/plans'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { getPlanLabel, formatPrice, formatLimit, getPlanConfig } from '../utils/plans'
+import { contactDisplayName } from '../utils/contacts'
+import { useAuth } from '../context/AuthContext'
+import Grainient from '../components/Grainient'
+import Footer from '../components/Footer'
+import { useTheme } from '../context/ThemeContext'
 
 const Sparkle = ({ className = '' }) => (
   <span className={className} aria-hidden>
@@ -9,52 +15,128 @@ const Sparkle = ({ className = '' }) => (
   </span>
 )
 
-// Données factices (à remplacer par contexte / API plus tard)
-const MOCK_PLAN = {
-  id: 'premium',
-  name: 'premium',
-  limit: 75,
-  price: 799.99,
-  icon: '⭐',
-}
-const MOCK_USER = {
-  nom: 'Dupont',
-  prenom: 'Jean',
-  dateNaissance: '1990-05-15',
-  couleurPref: '#036C17',
-  email: 'jean.dupont@exemple.fr',
-}
-const MOCK_CONTACTS = [
-  { id: 1, nom: 'Marie Martin', email: 'marie.martin@exemple.fr' },
-  { id: 2, nom: 'Paul Bernard', email: 'paul.bernard@exemple.fr' },
-  { id: 3, nom: 'Sophie Petit', email: 'sophie.petit@exemple.fr' },
-]
-const MOCK_CONVERSIONS = [
-  { id: 1, date: '08/02/2025', libelle: 'PDF généré depuis une URL' },
-  { id: 2, date: '07/02/2025', libelle: 'PDF généré depuis une URL' },
-  { id: 3, date: '06/02/2025', libelle: 'PDF généré depuis une URL' },
-]
+const DEFAULT_PLAN_ICON = '⭐'
 
 function formatDateDisplay(isoDate) {
   if (!isoDate) return '—'
-  const d = new Date(isoDate + 'T12:00:00')
+  const d = new Date(isoDate)
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
+function capitalizeWords(value) {
+  if (!value || typeof value !== 'string') return ''
+  return value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toLocaleUpperCase('fr-FR') + w.slice(1).toLocaleLowerCase('fr-FR'))
+    .join(' ')
+}
+
 export default function DashboardPage() {
-  const userName = `${MOCK_USER.prenom} ${MOCK_USER.nom}`
-  const conversionsPercent = 65
-  const planLabel = getPlanLabel(MOCK_PLAN.name)
-  const planPrice = formatPrice(MOCK_PLAN.price)
-  const planLimit = formatLimit(MOCK_PLAN.limit)
+  const { user, logout, refreshUser } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { theme } = useTheme()
+  const displayUser = user || { nom: '', prenom: '', dateNaissance: '', couleurPref: '#036C17', email: '' }
+  const userColor = displayUser.couleurPref || '#036C17'
+  const userName = `${capitalizeWords(displayUser.prenom || '')} ${capitalizeWords(displayUser.nom || '')}`.trim() || 'Utilisateur'
+  const [conversionsPercent, setConversionsPercent] = useState(0)
+  const [conversionsCount, setConversionsCount] = useState(0)
+  const [conversionsLimit, setConversionsLimit] = useState(null)
+  const [recentGenerations, setRecentGenerations] = useState([])
+  const [recentContacts, setRecentContacts] = useState([])
+  const currentPlanId = user?.planId || 'free'
+  const isPigeonPlan = currentPlanId === 'pigeon'
+  const planConfig = getPlanConfig(currentPlanId)
+  const planLabel = getPlanLabel(currentPlanId) || 'Aucun plan'
+  const planPrice = planConfig ? formatPrice(planConfig.price) : '—'
+  const planLimit = planConfig ? formatLimit(planConfig.limit) : '—'
+
+  useEffect(() => {
+    if (searchParams.get('payment') !== 'success') return
+    let cancelled = false
+    refreshUser().then(() => {
+      if (!cancelled) setSearchParams({}, { replace: true })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [searchParams, refreshUser, setSearchParams])
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchStats() {
+      try {
+        const res = await fetch('/api/pdf/stats-today', { credentials: 'include' })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || !data?.ok) return
+        if (cancelled) return
+        setConversionsPercent(typeof data.percent === 'number' ? data.percent : 0)
+        setConversionsCount(typeof data.countToday === 'number' ? data.countToday : 0)
+        setConversionsLimit(data.limit ?? null)
+      } catch {
+        // ignore errors, keep defaults
+      }
+    }
+    if (user) {
+      fetchStats()
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [user])
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchRecentGenerations() {
+      try {
+        const res = await fetch('/api/pdf/generations', { credentials: 'include' })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || !data?.ok || !Array.isArray(data.generations)) return
+        if (cancelled) return
+        setRecentGenerations(data.generations.slice(0, 3))
+      } catch {
+        // ignore
+      }
+    }
+    if (user) {
+      fetchRecentGenerations()
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [user])
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchRecentContacts() {
+      try {
+        const res = await fetch('/api/contacts', { credentials: 'include' })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || !data?.ok || !Array.isArray(data.contacts)) return
+        if (cancelled) return
+        setRecentContacts(data.contacts.slice(0, 3))
+      } catch {
+        // ignore
+      }
+    }
+    if (user) {
+      fetchRecentContacts()
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [user])
 
   return (
     <div className="dashboard-page">
       <div className="home-bg" aria-hidden>
-        <div className="home-bg-layer home-bg-layer--1" />
-        <div className="home-bg-layer home-bg-layer--2" />
-        <div className="home-bg-layer home-bg-layer--3" />
-        <div className="home-bg-layer home-bg-layer--4" />
+        <Grainient
+          className="home-bg-canvas"
+          color1={theme === 'dark' ? '#065f46' : '#bbf7d0'} // vert un peu plus présent
+          color2={userColor}
+          color3={theme === 'dark' ? '#9f1239' : '#fecaca'} // rose un peu plus présent
+        />
         <div className="home-bg-noise" />
       </div>
 
@@ -79,23 +161,39 @@ export default function DashboardPage() {
               Historique
             </Link>
           </nav>
-          <div className="dashboard-avatar" aria-hidden />
+          <button
+            type="button"
+            className="dashboard-nav-btn dashboard-nav-btn--secondary"
+            onClick={logout}
+            style={{ marginLeft: 'auto' }}
+          >
+            Déconnexion
+          </button>
+          <div className="dashboard-user">
+            <p className="dashboard-name">{userName}</p>
+            <div className="dashboard-avatar" aria-hidden />
+          </div>
           <div className="dashboard-conversions">
-            <div className="dashboard-conversions-bar-wrap">
+            <div className={`dashboard-conversions-bar-wrap ${isPigeonPlan ? 'dashboard-conversions-bar-wrap--pigeon' : ''}`}>
               <div
-                className="dashboard-conversions-bar-fill"
-                style={{ width: `${conversionsPercent}%` }}
+                className={`dashboard-conversions-bar-fill ${isPigeonPlan ? 'dashboard-conversions-bar-fill--pigeon' : ''}`}
+                style={{ width: isPigeonPlan ? '400%' : `${conversionsPercent}%` }}
                 role="progressbar"
-                aria-valuenow={conversionsPercent}
+                aria-valuenow={isPigeonPlan ? 100 : conversionsPercent}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label="Conversions"
               />
             </div>
-            <span className="dashboard-conversions-label">conversions</span>
+            <span className="dashboard-conversions-label">
+              {isPigeonPlan
+                ? 'Illimité'
+                : conversionsLimit == null
+                  ? `${conversionsCount} conversions`
+                  : `${conversionsCount}/${conversionsLimit} conversions`}
+            </span>
           </div>
         </div>
-        <p className="dashboard-name">{userName}</p>
       </header>
 
       <main className="dashboard-main">
@@ -103,10 +201,15 @@ export default function DashboardPage() {
           <h2 className="dashboard-block-title">Votre abonnement</h2>
           <div className="dashboard-block-content dashboard-block-content--plan">
             <div className="dashboard-plan-card dashboard-plan-card--mango">
-              <span className="dashboard-plan-icon" aria-hidden>{MOCK_PLAN.icon}</span>
+              <span className="dashboard-plan-icon" aria-hidden>{DEFAULT_PLAN_ICON}</span>
               <span className="dashboard-plan-name">{planLabel}</span>
               <span className="dashboard-plan-price">{planPrice}</span>
               <span className="dashboard-plan-limit">{planLimit}</span>
+            </div>
+            <div className="dashboard-plan-change">
+              <Link to="/plans" className="dashboard-nav-btn dashboard-nav-btn--secondary">
+                Changer de plan
+              </Link>
             </div>
           </div>
         </section>
@@ -114,29 +217,34 @@ export default function DashboardPage() {
         <section className="dashboard-block home-glass home-glass--card">
           <h2 className="dashboard-block-title">Vos informations</h2>
           <div className="dashboard-block-content dashboard-block-content--info">
+            <div className="dashboard-info-actions">
+              <Link to="/compte" className="dashboard-nav-btn dashboard-nav-btn--secondary">
+                Modifier mes infos
+              </Link>
+            </div>
             <dl className="dashboard-info-list">
               <div className="dashboard-info-row">
                 <dt>Nom</dt>
-                <dd>{MOCK_USER.nom}</dd>
+                <dd>{displayUser.nom || '—'}</dd>
               </div>
               <div className="dashboard-info-row">
                 <dt>Prénom</dt>
-                <dd>{MOCK_USER.prenom}</dd>
+                <dd>{displayUser.prenom || '—'}</dd>
               </div>
               <div className="dashboard-info-row">
                 <dt>Date de naissance</dt>
-                <dd>{formatDateDisplay(MOCK_USER.dateNaissance)}</dd>
+                <dd>{formatDateDisplay(displayUser.dateNaissance)}</dd>
               </div>
               <div className="dashboard-info-row">
                 <dt>Couleur préférée</dt>
                 <dd className="dashboard-info-color">
-                  <span className="dashboard-info-color-swatch" style={{ background: MOCK_USER.couleurPref }} aria-hidden />
-                  {MOCK_USER.couleurPref}
+                  <span className="dashboard-info-color-swatch" style={{ background: displayUser.couleurPref }} aria-hidden />
+                  {displayUser.couleurPref || '—'}
                 </dd>
               </div>
               <div className="dashboard-info-row">
                 <dt>Email</dt>
-                <dd>{MOCK_USER.email}</dd>
+                <dd>{displayUser.email || '—'}</dd>
               </div>
             </dl>
           </div>
@@ -146,9 +254,14 @@ export default function DashboardPage() {
           <h2 className="dashboard-block-title">Contacts récents</h2>
           <div className="dashboard-block-content dashboard-block-content--list">
             <ul className="dashboard-list">
-              {MOCK_CONTACTS.map((c) => (
+              {recentContacts.length === 0 && (
+                <li className="dashboard-list-item">
+                  <span className="dashboard-list-item-libelle">Aucun contact pour le moment.</span>
+                </li>
+              )}
+              {recentContacts.map((c) => (
                 <li key={c.id} className="dashboard-list-item">
-                  <span className="dashboard-list-item-name">{c.nom}</span>
+                  <span className="dashboard-list-item-name">{contactDisplayName(c)}</span>
                   <span className="dashboard-list-item-email">{c.email}</span>
                 </li>
               ))}
@@ -163,10 +276,15 @@ export default function DashboardPage() {
           <h2 className="dashboard-block-title">Conversions récentes</h2>
           <div className="dashboard-block-content dashboard-block-content--list">
             <ul className="dashboard-list">
-              {MOCK_CONVERSIONS.map((conv) => (
-                <li key={conv.id} className="dashboard-list-item">
-                  <span className="dashboard-list-item-date">{conv.date}</span>
-                  <span className="dashboard-list-item-libelle">{conv.libelle}</span>
+              {recentGenerations.length === 0 && (
+                <li className="dashboard-list-item">
+                  <span className="dashboard-list-item-libelle">Aucune conversion récente.</span>
+                </li>
+              )}
+              {recentGenerations.map((g) => (
+                <li key={g.id} className="dashboard-list-item">
+                  <span className="dashboard-list-item-date">{formatDateDisplay(g.createdAt)}</span>
+                  <span className="dashboard-list-item-libelle">PDF généré depuis une URL</span>
                 </li>
               ))}
             </ul>
@@ -174,7 +292,7 @@ export default function DashboardPage() {
         </section>
       </main>
 
-      <footer className="home-footer home-glass" />
+      <Footer />
     </div>
   )
 }

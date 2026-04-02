@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\UserContact;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,6 +15,44 @@ class UserContactRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserContact::class);
+    }
+
+    /**
+     * @return UserContact[]
+     */
+    public function findByOwnerOrdered(User $owner): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.user = :u')
+            ->setParameter('u', $owner)
+            ->orderBy('c.lastname', 'ASC')
+            ->addOrderBy('c.firstname', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOneByOwnerAndEmail(User $owner, string $email): ?UserContact
+    {
+        $emailNorm = mb_strtolower(trim($email));
+
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.user = :u')
+            ->andWhere('LOWER(TRIM(c.email)) = :email')
+            ->setParameter('u', $owner)
+            ->setParameter('email', $emailNorm)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findOneByOwnerAndContactUser(User $owner, User $contactUser): ?UserContact
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.user = :u')
+            ->andWhere('c.contactUser = :contact')
+            ->setParameter('u', $owner)
+            ->setParameter('contact', $contactUser)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     //    /**

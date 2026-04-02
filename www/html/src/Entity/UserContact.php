@@ -28,6 +28,11 @@ class UserContact
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    /** Compte utilisateur inscrit associé à ce contact (optionnel). */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'contact_user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $contactUser = null;
+
     /**
      * @var Collection<int, GenerationUserContact>
      */
@@ -88,6 +93,18 @@ class UserContact
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getContactUser(): ?User
+    {
+        return $this->contactUser;
+    }
+
+    public function setContactUser(?User $contactUser): static
+    {
+        $this->contactUser = $contactUser;
 
         return $this;
     }
