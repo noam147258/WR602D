@@ -1,5 +1,7 @@
 
 ###> symfony/framework-bundle ###
+# Secrets et overrides locaux (clés Stripe, etc.)
+/.env
 /.env.local
 /.env.local.php
 /.env.*.local
