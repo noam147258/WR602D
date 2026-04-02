@@ -3,9 +3,11 @@
 namespace App\Controller\Api;
 
 use App\Entity\ContactRequest;
+use App\Entity\GenerationUserContact;
 use App\Entity\User;
 use App\Entity\UserContact;
 use App\Repository\ContactRequestRepository;
+use App\Repository\GenerationUserContactRepository;
 use App\Repository\UserContactRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +25,7 @@ class ContactApiController extends AbstractController
         private readonly UserRepository $users,
         private readonly UserContactRepository $contacts,
         private readonly ContactRequestRepository $contactRequests,
+        private readonly GenerationUserContactRepository $generationUserContacts,
     ) {
     }
 
@@ -49,11 +52,17 @@ class ContactApiController extends AbstractController
             $this->contactRequests->findPendingOutgoingFor($user)
         );
 
+        $incomingShares = array_map(
+            fn (GenerationUserContact $guc) => $this->serializeIncomingShare($guc),
+            $this->generationUserContacts->findPendingIncomingForRecipient($user)
+        );
+
         return $this->json([
             'ok' => true,
             'contacts' => $contactItems,
             'incomingRequests' => $incoming,
             'outgoingPending' => $outgoing,
+            'incomingShares' => $incomingShares,
         ]);
     }
 
@@ -354,6 +363,27 @@ class ContactApiController extends AbstractController
             'id' => $r->getId(),
             'createdAt' => $r->getCreatedAt()?->format(\DateTimeInterface::ATOM),
             'recipient' => $rec ? $this->serializeUserBrief($rec) : null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeIncomingShare(GenerationUserContact $guc): array
+    {
+        $uc = $guc->getUserContact();
+        $gen = $guc->getGeneration();
+        $sender = $uc?->getUser();
+
+        return [
+            'id' => $guc->getId(),
+            'createdAt' => $guc->getCreatedAt()?->format(\DateTimeInterface::ATOM),
+            'generation' => [
+                'id' => $gen?->getId(),
+                'url' => $gen?->getFile(),
+                'createdAt' => $gen?->getCreatedAt()?->format(\DateTimeInterface::ATOM),
+            ],
+            'sender' => $sender ? $this->serializeUserBrief($sender) : null,
         ];
     }
 }

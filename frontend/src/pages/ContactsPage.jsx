@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { contactDisplayName } from '../utils/contacts'
 
 const API_CONTACTS = '/api/contacts'
+const API_PDF_SHARES = '/api/pdf/shares'
 
 function fetchWithTimeout(url, opts = {}, ms = 8000) {
   const controller = new AbortController()
@@ -22,10 +23,12 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState([])
   const [incomingRequests, setIncomingRequests] = useState([])
   const [outgoingPending, setOutgoingPending] = useState([])
+  const [incomingShares, setIncomingShares] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [requestActionId, setRequestActionId] = useState(null)
+  const [shareActionId, setShareActionId] = useState(null)
   const [error, setError] = useState(null)
   const [info, setInfo] = useState(null)
   const [email, setEmail] = useState('')
@@ -40,6 +43,7 @@ export default function ContactsPage() {
         setContacts([])
         setIncomingRequests([])
         setOutgoingPending([])
+        setIncomingShares([])
         return
       }
       if (!res.ok) {
@@ -47,16 +51,19 @@ export default function ContactsPage() {
         setContacts([])
         setIncomingRequests([])
         setOutgoingPending([])
+        setIncomingShares([])
         return
       }
       setContacts(Array.isArray(data.contacts) ? data.contacts : [])
       setIncomingRequests(Array.isArray(data.incomingRequests) ? data.incomingRequests : [])
       setOutgoingPending(Array.isArray(data.outgoingPending) ? data.outgoingPending : [])
+      setIncomingShares(Array.isArray(data.incomingShares) ? data.incomingShares : [])
     } catch {
       setError('Erreur réseau ou délai dépassé.')
       setContacts([])
       setIncomingRequests([])
       setOutgoingPending([])
+      setIncomingShares([])
     } finally {
       setLoading(false)
     }
@@ -139,6 +146,49 @@ export default function ContactsPage() {
       setError('Erreur réseau ou délai dépassé.')
     } finally {
       setRequestActionId(null)
+    }
+  }
+
+  async function handleAcceptShare(shareId) {
+    setShareActionId(shareId)
+    setError(null)
+    try {
+      const res = await fetchWithTimeout(`${API_PDF_SHARES}/${shareId}/accept`, {
+        credentials: 'include',
+        method: 'POST',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data?.error || 'Acceptation impossible')
+        return
+      }
+      setInfo('Conversion ajoutée à votre historique.')
+      await load()
+    } catch {
+      setError('Erreur réseau ou délai dépassé.')
+    } finally {
+      setShareActionId(null)
+    }
+  }
+
+  async function handleRejectShare(shareId) {
+    setShareActionId(shareId)
+    setError(null)
+    try {
+      const res = await fetchWithTimeout(`${API_PDF_SHARES}/${shareId}/reject`, {
+        credentials: 'include',
+        method: 'POST',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data?.error || 'Refus impossible')
+        return
+      }
+      await load()
+    } catch {
+      setError('Erreur réseau ou délai dépassé.')
+    } finally {
+      setShareActionId(null)
     }
   }
 
@@ -238,6 +288,61 @@ export default function ContactsPage() {
             <p className="contacts-placeholder">Chargement…</p>
           ) : (
             <>
+              {incomingShares.length > 0 && (
+                <div className="contacts-section">
+                  <h2 className="contacts-section-title">Conversions partagées</h2>
+                  <p className="contacts-section-hint">
+                    Un contact vous envoie une conversion : acceptez pour l’ajouter à votre historique.
+                  </p>
+                  <ul className="contacts-list contacts-list--requests">
+                    {incomingShares.map((row) => {
+                      const u = row.sender
+                      const url = row.generation?.url
+                      return (
+                        <li key={row.id} className="contacts-list-item contacts-list-item--request">
+                          <div className="contacts-list-item-body">
+                            {u?.photo && (u.photo.startsWith('data:') || u.photo.startsWith('http')) ? (
+                              <img src={u.photo} alt="" className="contacts-list-avatar" />
+                            ) : (
+                              <span className="contacts-list-avatar contacts-list-avatar--placeholder" aria-hidden>
+                                {(contactDisplayName(u) || '?').charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                            <div className="contacts-list-item-text">
+                              <span className="contacts-list-item-name">
+                                {contactDisplayName(u)}
+                                <span className="contacts-share-label"> vous propose une conversion</span>
+                              </span>
+                              <span className="contacts-list-item-email" title={url}>
+                                {url ? (url.length > 80 ? `${url.slice(0, 80)}…` : url) : '—'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="contacts-request-actions">
+                            <button
+                              type="button"
+                              className="contacts-accept-btn"
+                              onClick={() => handleAcceptShare(row.id)}
+                              disabled={shareActionId === row.id}
+                            >
+                              {shareActionId === row.id ? '…' : 'Accepter'}
+                            </button>
+                            <button
+                              type="button"
+                              className="contacts-reject-btn"
+                              onClick={() => handleRejectShare(row.id)}
+                              disabled={shareActionId === row.id}
+                            >
+                              Refuser
+                            </button>
+                          </div>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              )}
+
               {incomingRequests.length > 0 && (
                 <div className="contacts-section">
                   <h2 className="contacts-section-title">Demandes reçues</h2>

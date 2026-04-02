@@ -25,10 +25,15 @@ class Generation
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    /** Utilisateur qui a partagé cette conversion (rempli pour les copies reçues). */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'shared_by_user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $sharedBy = null;
+
     /**
      * @var Collection<int, GenerationUserContact>
      */
-    #[ORM\OneToMany(targetEntity: GenerationUserContact::class, mappedBy: 'generation')]
+    #[ORM\OneToMany(targetEntity: GenerationUserContact::class, mappedBy: 'generation', cascade: ['remove'])]
     private Collection $generationUserContacts;
 
     public function __construct()
@@ -73,6 +78,18 @@ class Generation
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getSharedBy(): ?User
+    {
+        return $this->sharedBy;
+    }
+
+    public function setSharedBy(?User $sharedBy): static
+    {
+        $this->sharedBy = $sharedBy;
 
         return $this;
     }

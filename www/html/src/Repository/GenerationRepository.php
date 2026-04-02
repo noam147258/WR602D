@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Generation;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,22 @@ class GenerationRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Generation::class);
+    }
+
+    /**
+     * Conversions reçues d’un contact (partage accepté).
+     *
+     * @return Generation[]
+     */
+    public function findImportedForUser(User $user): array
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.user = :u')
+            ->andWhere('g.sharedBy IS NOT NULL')
+            ->setParameter('u', $user)
+            ->orderBy('g.created_at', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     //    /**
