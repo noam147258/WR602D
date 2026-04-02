@@ -1,0 +1,25 @@
+# Blueprint Render : Web Docker + base de données MySQL (à créer dans le dashboard si besoin).
+# Variables à définir dans Render (Environment) :
+#   DATABASE_URL (MySQL Render ou externe, même format que .env.example)
+#   APP_SECRET
+#   GOTENBERG_URL (service Gotenberg séparé ou URL publique)
+#   STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET
+#   FRONTEND_URL = https://<ton-service>.onrender.com/spa  (sans slash final)
+#   DEFAULT_URI = https://<ton-service>.onrender.com  (URL absolue pour les liens Symfony)
+# Optionnel : TRUSTED_PROXIES (déjà géré en prod dans framework.yaml)
+
+services:
+  - type: web
+    name: wr602d
+    runtime: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    healthCheckPath: /spa/
+    releaseCommand: php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_RUNTIME_MODE
+        value: prod
+      - key: APP_SHARE_DIR
+        value: var/share

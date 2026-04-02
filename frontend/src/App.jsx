@@ -14,8 +14,10 @@ import ThemeToggle from './components/ThemeToggle'
 import './index.css'
 
 function App() {
+  const rawBase = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+  const routerBasename = rawBase === '' ? undefined : rawBase
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <ThemeToggle />
       <Routes>
         <Route path="/" element={<HomePage />} />

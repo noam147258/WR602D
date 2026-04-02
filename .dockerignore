@@ -1,0 +1,8 @@
+.git
+frontend/node_modules
+www/html/var
+www/html/vendor
+# Ne pas utiliser www/html/.env.* : cela exclurait .env.example nécessaire au build.
+www/html/.env
+www/html/.env.local
+www/html/.env.local.php
